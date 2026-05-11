@@ -5,6 +5,9 @@ dist/
 *.log
 .DS_Store
 
+# Override the global *.lock rule — bun.lock is committed for reproducible builds.
+!bun.lock
+
 # Per-thread agent sandboxes — ephemeral, never commit
 workspaces/
 

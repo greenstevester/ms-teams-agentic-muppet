@@ -37,6 +37,7 @@ Teams ──► Bot Framework adapter (src/index.ts)
 
 ### Prerequisites
 
+- [Bun](https://bun.sh) ≥1.2 (used as the runtime — no Node compile step)
 - Docker + docker-compose (OrbStack recommended on Apple Silicon)
 - An Anthropic API key for local dev (or AWS creds for Bedrock in prod)
 - Microsoft Bot Framework Emulator for the fast inner loop
@@ -50,6 +51,7 @@ The fastest path. No Azure, no tunnel, no Teams tenant.
 cp .env.example .env
 # Fill in ANTHROPIC_API_KEY at minimum
 
+bun install                # generate bun.lock for the Docker build
 docker compose up --build
 ```
 

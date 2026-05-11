@@ -5,16 +5,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run build     # tsc → dist/
-npm run lint      # tsc --noEmit (this repo's "lint" is a type-check; there is no ESLint)
-npm run dev       # tsc --watch + nodemon on dist/
-npm start         # node dist/index.js (expects build first)
+bun install       # install deps; generates/updates bun.lock
+bun run lint      # tsc --noEmit (this repo's "lint" is a type-check; there is no ESLint)
+bun run dev       # bun --watch src/index.ts (runs TS directly, restarts on change)
+bun start         # bun src/index.ts (one-shot)
 
 docker compose up --build              # local stack (just the bot service)
 docker compose --profile tunnel up     # adds cloudflared for real-Teams testing
 ```
 
-There is **no test runner configured**. Don't claim tests pass — there are none to run. If you add tests, add the runner and a `test` script in the same change.
+The runtime is **Bun**, not Node. Bun executes `src/*.ts` directly — there's no compile step and no `dist/`. `tsc` is kept only for type checking via `bun run lint`. `bun.lock` must exist before `docker build` (the Dockerfile uses `--frozen-lockfile`); run `bun install` once locally to create it.
+
+There is **no test runner configured**. Don't claim tests pass — there are none to run. If you add tests, add the runner (`bun test` is built in) and a `test` script in the same change.
 
 ## Architecture
 

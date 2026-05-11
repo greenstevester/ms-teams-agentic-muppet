@@ -4,15 +4,13 @@
   "description": "Public-only agent for Microsoft Teams, modelled on Shopify's River",
   "private": true,
   "type": "commonjs",
-  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "tsc --watch & nodemon --watch dist dist/index.js",
+    "start": "bun src/index.ts",
+    "dev": "bun --watch src/index.ts",
     "lint": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20"
+    "bun": ">=1.2"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.1.0",
@@ -20,9 +18,8 @@
     "express": "^4.21.0"
   },
   "devDependencies": {
+    "@types/bun": "^1.2.0",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.0.0",
-    "nodemon": "^3.1.0",
     "typescript": "^5.6.0"
   }
 }
