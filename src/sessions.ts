@@ -1,9 +1,11 @@
+import type { McpServerConfig } from '@anthropic-ai/claude-agent-sdk';
+
 interface Session {
   threadId: string;
   zone?: string;
   sdkSessionId?: string;
   workdir: string;
-  mcpServers: Record<string, unknown>;
+  mcpServers: Record<string, McpServerConfig>;
   allowedTools: string[];
   createdAt: number;
   lastUsedAt: number;
