@@ -44,10 +44,17 @@ services:
       # Inspect with: `docker compose exec ms-teams-agentic-muppet ls /app/workspaces`
       - workspaces:/app/workspaces
 
-      # AWS credentials from the host (read-only). Picks up `aws configure`
-      # profiles AND `aws sso login` token cache. If ~/.aws doesn't exist
-      # on your host, run `mkdir -p ~/.aws` first or the bind mount will fail.
-      - ${HOME}/.aws:/root/.aws:ro
+      # AWS credentials + SSO token cache. Docker named volume — NOT a host
+      # bind mount, so no host AWS CLI is required. Persists across restarts,
+      # rebuilds, and `docker compose down`. Wiped by `docker compose down -v`.
+      #
+      # First-time setup:
+      #   docker compose run --rm ms-teams-agentic-muppet aws configure sso
+      # Refresh expired SSO token:
+      #   docker compose exec ms-teams-agentic-muppet aws sso login
+      # Inspect:
+      #   docker compose exec ms-teams-agentic-muppet aws sts get-caller-identity
+      - aws-creds:/root/.aws
     restart: unless-stopped
 
   # Only needed once you graduate from the Bot Framework Emulator
@@ -64,3 +71,4 @@ services:
 
 volumes:
   workspaces:
+  aws-creds:

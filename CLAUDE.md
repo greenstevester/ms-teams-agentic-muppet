@@ -46,7 +46,7 @@ A zone (`zones/<name>/`) is a system-prompt prefix (`SKILL.md`) plus an MCP serv
 
 The Claude Agent SDK has two native backends. `docker-compose.yml` passes env vars for both — set whichever you want and the SDK picks:
 
-- **Bedrock (default / recommended)**: set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_PROFILE`, `AWS_REGION`, and `ANTHROPIC_MODEL` (a Bedrock model ID or inference profile ARN). The compose file **bind-mounts `~/.aws:/root/.aws:ro`**, so `aws configure sso` / `aws configure` on the host gives the container credentials automatically — no need to copy access keys into `.env` (though `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` envs are still passed through if you prefer).
+- **Bedrock (default / recommended)**: set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_PROFILE`, `AWS_REGION`, and `ANTHROPIC_MODEL` (a Bedrock model ID or inference profile ARN). **AWS CLI v2 is installed in the Docker image** and credentials live in a Docker named volume (`aws-creds:/root/.aws`) — no host AWS CLI needed. First-time auth: `docker compose run --rm ms-teams-agentic-muppet aws configure sso` (interactive browser flow); refresh: `docker compose exec ms-teams-agentic-muppet aws sso login`. The volume persists across `docker compose down`; only `down -v` wipes it. `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` envs are still passed through if you prefer static keys.
 - **Direct Anthropic API**: set `ANTHROPIC_API_KEY` and leave the Bedrock vars blank. SDK calls `api.anthropic.com`. Useful when you don't have Bedrock access.
 
 There's no default for `ANTHROPIC_MODEL` — the SDK picks one if unset, but for Bedrock you almost always want to pin the model ID for your region.
