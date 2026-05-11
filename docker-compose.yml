@@ -5,11 +5,16 @@ services:
     ports:
       - "3978:3978"
     environment:
-      # Claude Agent SDK → LiteLLM → OpenRouter for local dev.
-      # Switch to CLAUDE_CODE_USE_BEDROCK=1 + AWS creds for production.
-      ANTHROPIC_BASE_URL: http://litellm:4000
-      ANTHROPIC_AUTH_TOKEN: dummy
-      ANTHROPIC_MODEL: claude-opus-4
+      # Claude Agent SDK backend — pick ONE path; the SDK picks based on which is set.
+      #   Local dev: set ANTHROPIC_API_KEY in .env  → calls api.anthropic.com directly.
+      #   Production: set CLAUDE_CODE_USE_BEDROCK=1 + AWS_* creds → calls Bedrock directly.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-7}
+      CLAUDE_CODE_USE_BEDROCK: ${CLAUDE_CODE_USE_BEDROCK:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
 
       # Bot Framework — leave blank for Emulator-only local dev.
       MS_APP_ID: ${MS_APP_ID:-}
@@ -24,20 +29,6 @@ services:
       - ./context:/app/context
       - ./zones:/app/zones
       - workspaces:/app/workspaces
-    depends_on:
-      - litellm
-    restart: unless-stopped
-
-  litellm:
-    image: ghcr.io/berriai/litellm:main-latest
-    container_name: ms-teams-agentic-muppet-litellm
-    environment:
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-    command: >
-      --model openrouter/anthropic/claude-opus-4
-      --port 4000
-    ports:
-      - "4000:4000"
     restart: unless-stopped
 
   # Only needed once you graduate from the Bot Framework Emulator

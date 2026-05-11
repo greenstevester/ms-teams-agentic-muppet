@@ -28,9 +28,9 @@ Teams ──► Bot Framework adapter (src/index.ts)
         Claude Agent SDK session (src/agent.ts)
             │  per-thread, paused/resumed across turns
             ▼
-        LiteLLM ──► OpenRouter (local dev)
+        Anthropic API (local dev, ANTHROPIC_API_KEY)
         OR
-        AWS Bedrock (production)
+        AWS Bedrock (production, CLAUDE_CODE_USE_BEDROCK=1)
 ```
 
 ## Local development
@@ -38,7 +38,7 @@ Teams ──► Bot Framework adapter (src/index.ts)
 ### Prerequisites
 
 - Docker + docker-compose (OrbStack recommended on Apple Silicon)
-- An OpenRouter API key for local dev (Bedrock for prod)
+- An Anthropic API key for local dev (or AWS creds for Bedrock in prod)
 - Microsoft Bot Framework Emulator for the fast inner loop
 - A Cloudflare Tunnel token (or ngrok / dev tunnels) once you need real Teams
 
@@ -48,7 +48,7 @@ The fastest path. No Azure, no tunnel, no Teams tenant.
 
 ```bash
 cp .env.example .env
-# Fill in OPENROUTER_API_KEY at minimum
+# Fill in ANTHROPIC_API_KEY at minimum
 
 docker compose up --build
 ```
@@ -72,7 +72,7 @@ Then in Bot Framework Emulator:
 
 ```
 ms-teams-agentic-muppet/
-├── docker-compose.yml      # ms-teams-agentic-muppet + litellm + cloudflared
+├── docker-compose.yml      # ms-teams-agentic-muppet + cloudflared (optional)
 ├── Dockerfile              # ms-teams-agentic-muppet service
 ├── package.json
 ├── tsconfig.json

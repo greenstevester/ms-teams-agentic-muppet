@@ -10,7 +10,7 @@ npm run lint      # tsc --noEmit (this repo's "lint" is a type-check; there is n
 npm run dev       # tsc --watch + nodemon on dist/
 npm start         # node dist/index.js (expects build first)
 
-docker compose up --build              # full local stack (ms-teams-agentic-muppet + litellm)
+docker compose up --build              # local stack (just the bot service)
 docker compose --profile tunnel up     # adds cloudflared for real-Teams testing
 ```
 
@@ -42,8 +42,12 @@ A zone (`zones/<name>/`) is a system-prompt prefix (`SKILL.md`) plus an MCP serv
 
 ## Model routing
 
-- **Local dev**: `docker-compose.yml` points the Claude Agent SDK at LiteLLM (`ANTHROPIC_BASE_URL=http://litellm:4000`), which proxies to OpenRouter. The bot's `ANTHROPIC_AUTH_TOKEN` is `dummy` because LiteLLM does its own auth.
-- **Production**: set `CLAUDE_CODE_USE_BEDROCK=1` and AWS creds. The SDK then talks to Bedrock directly — strip the LiteLLM service from compose.
+The Claude Agent SDK has two native backends. `docker-compose.yml` passes env vars for both — set whichever you want and the SDK picks:
+
+- **Local dev (direct Anthropic API)**: set `ANTHROPIC_API_KEY` in `.env`. SDK hits `api.anthropic.com`. `ANTHROPIC_MODEL` defaults to `claude-opus-4-7` and is overridable.
+- **Production (Bedrock)**: set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_REGION`, and AWS creds (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`, optionally `AWS_SESSION_TOKEN`). Set `ANTHROPIC_MODEL` to your Bedrock model ID or inference profile ARN.
+
+No proxy, no LiteLLM. If you ever need cross-provider routing or observability, add LiteLLM back and point the SDK at it via `ANTHROPIC_BASE_URL` — the SDK supports it natively.
 
 ## Things to know before editing
 
