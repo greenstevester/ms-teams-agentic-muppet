@@ -33,42 +33,107 @@ Teams ──► Bot Framework adapter (src/index.ts)
         AWS Bedrock (production, CLAUDE_CODE_USE_BEDROCK=1)
 ```
 
-## Local development
+## Quickstart (WSL / Linux / macOS + Docker + Bedrock + Emulator)
 
-### Prerequisites
+The minimum to talk to the bot from your machine. No Teams tenant, no tunnel,
+no Azure resources.
 
-- [Bun](https://bun.sh) ≥1.2 (used as the runtime — no Node compile step)
-- Docker + docker-compose (OrbStack recommended on Apple Silicon)
-- An Anthropic API key for local dev (or AWS creds for Bedrock in prod)
-- Microsoft Bot Framework Emulator for the fast inner loop
-- A Cloudflare Tunnel token (or ngrok / dev tunnels) once you need real Teams
-
-### Inner loop: Bot Framework Emulator
-
-The fastest path. No Azure, no tunnel, no Teams tenant.
+### 1. Install prerequisites
 
 ```bash
-cp .env.example .env
-# Fill in ANTHROPIC_API_KEY at minimum
+# Docker Desktop (with WSL2 backend on Windows) — install separately
 
-bun install                # generate bun.lock for the Docker build
+# AWS CLI v2
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscli.zip
+unzip awscli.zip && sudo ./aws/install
+
+# Bot Framework Emulator (Windows / macOS / Linux installer)
+# Download: https://github.com/Microsoft/BotFramework-Emulator/releases
+```
+
+(Bun is NOT required for the Quickstart — the Docker image runs it. You only
+need Bun on the host if you want `bun run dev` outside Docker.)
+
+### 2. Authenticate AWS once
+
+```bash
+aws configure sso          # for SSO (most enterprise setups)
+# or
+aws configure              # for static access keys
+```
+
+Verify it worked:
+
+```bash
+aws sts get-caller-identity --profile <your-profile-name>
+```
+
+### 3. Configure the bot
+
+```bash
+git clone <this-repo>
+cd ms-teams-agentic-muppet
+cp .env.example .env
+```
+
+Edit `.env`:
+- `AWS_PROFILE` — the profile name you used with `aws configure`
+- `AWS_REGION` — e.g. `us-east-1`
+- `ANTHROPIC_MODEL` — a Bedrock model ID. List options with:
+  `aws bedrock list-foundation-models --region us-east-1 --by-provider anthropic`
+
+Leave the `MS_APP_*` and `CF_TUNNEL_TOKEN` lines blank — you don't need them yet.
+
+### 4. Run
+
+```bash
 docker compose up --build
 ```
 
-Then in Bot Framework Emulator:
+`docker-compose.yml` bind-mounts `~/.aws` into the container, so the SDK
+picks up your AWS credentials automatically. You should see `ms-teams-agentic-muppet
+listening on :3978`.
+
+### 5. Test with Bot Framework Emulator
+
 - Open Bot URL: `http://localhost:3978/api/messages`
-- Leave App ID / Password blank for local
-- Send "hello" — should get the public-only refusal
-- Switch conversation type to `channel` in Emulator settings and try again — should hit the agent
+- Leave App ID / Password blank
+- Send "hello" — should get the public-only refusal (correct: DMs are blocked by design)
+- In Emulator's conversation settings, set conversation type to `channel`, send another "hello" — should reach the agent and reply
 
-### Outer loop: real Teams
+That's the loop. Iterate by editing `src/**/*.ts`; `docker compose up --build`
+to rebuild, or run `bun --watch src/index.ts` on the host for hot-reload (needs
+`bun install` first).
 
-1. Register an Azure Bot resource (free `F0` tier is fine)
-2. Add Microsoft Teams as a channel
-3. Set the messaging endpoint to your Cloudflare Tunnel URL: `https://muppet-dev.yourdomain.com/api/messages`
-4. Fill `MS_APP_ID` and `MS_APP_PASSWORD` in `.env`
-5. Set `CF_TUNNEL_TOKEN` and `docker compose up`
-6. Build the Teams app manifest via [Teams Developer Portal](https://dev.teams.microsoft.com) and sideload into a Microsoft 365 Developer Program tenant
+## Setting up real Teams
+
+Once the Emulator loop works, graduating to Teams is a separate (harder) step:
+
+1. Register an Azure Bot resource (free `F0` tier is fine).
+2. Add Microsoft Teams as a channel.
+3. Set the messaging endpoint to your Cloudflare Tunnel URL: `https://muppet-dev.yourdomain.com/api/messages`.
+4. Fill `MS_APP_ID` and `MS_APP_PASSWORD` in `.env`.
+5. Set `CF_TUNNEL_TOKEN` and run `docker compose --profile tunnel up`.
+6. Build the Teams app manifest via [Teams Developer Portal](https://dev.teams.microsoft.com) and sideload into a Microsoft 365 Developer Program tenant.
+
+Note: this is the standard Microsoft Teams bot flow, not Incoming Webhooks
+(which are one-way / publish-only and don't support `@`-mentions).
+
+## Where state lives
+
+| Host path | Container path | Type | Persists? | Purpose |
+| --- | --- | --- | --- | --- |
+| `./context/` | `/app/context` | bind mount | yes — committed to git | Channel + user qmd memory (read on every turn) |
+| `./zones/` | `/app/zones` | bind mount | yes — committed to git | Zone definitions (`SKILL.md`, `mcp.json`) |
+| (Docker named volume `workspaces`) | `/app/workspaces` | named volume | until `docker compose down -v` | Per-thread agent sandboxes — ephemeral by design |
+| `~/.aws/` | `/root/.aws` (ro) | bind mount | host-managed | AWS creds + SSO token cache (used for Bedrock) |
+
+The `workspaces` volume is deliberately NOT bind-mounted to the repo —
+per-thread sandboxes can grow large and shouldn't pollute git. Inspect them
+with `docker compose exec ms-teams-agentic-muppet ls /app/workspaces`.
+
+To wipe all per-thread state: `docker compose down -v`. Channel/user memory
+(`context/`) and zones (`zones/`) are unaffected because they live in the repo.
 
 ## Project layout
 

@@ -6,15 +6,21 @@ services:
       - "3978:3978"
     environment:
       # Claude Agent SDK backend — pick ONE path; the SDK picks based on which is set.
-      #   Local dev: set ANTHROPIC_API_KEY in .env  → calls api.anthropic.com directly.
-      #   Production: set CLAUDE_CODE_USE_BEDROCK=1 + AWS_* creds → calls Bedrock directly.
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-opus-4-7}
+      #   Bedrock (recommended for enterprise / AWS shops):
+      #     Run `aws configure sso` or `aws configure` on the host. The compose
+      #     file bind-mounts ~/.aws into the container, so the SDK picks up
+      #     creds automatically — just set CLAUDE_CODE_USE_BEDROCK=1 and
+      #     AWS_PROFILE in .env.
+      #   Direct Anthropic API (no AWS account needed):
+      #     Set ANTHROPIC_API_KEY in .env. Leave the Bedrock vars blank.
       CLAUDE_CODE_USE_BEDROCK: ${CLAUDE_CODE_USE_BEDROCK:-}
+      AWS_PROFILE: ${AWS_PROFILE:-}
       AWS_REGION: ${AWS_REGION:-}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-}
 
       # Bot Framework — leave blank for Emulator-only local dev.
       MS_APP_ID: ${MS_APP_ID:-}
@@ -26,9 +32,22 @@ services:
       CONTEXT_REPO: /app/context
       ZONES_DIR: /app/zones
     volumes:
+      # Channel + user qmd memory. Bind-mounted from the repo, committed to git.
+      # Edit host files to seed memory; the bot reads them on every turn.
       - ./context:/app/context
+
+      # Zone definitions (system prompts, per-zone MCP servers). Committed to git.
       - ./zones:/app/zones
+
+      # Per-thread agent sandboxes. Named Docker volume — NOT bind-mounted to
+      # the host. Survives `docker compose down`, wiped by `docker compose down -v`.
+      # Inspect with: `docker compose exec ms-teams-agentic-muppet ls /app/workspaces`
       - workspaces:/app/workspaces
+
+      # AWS credentials from the host (read-only). Picks up `aws configure`
+      # profiles AND `aws sso login` token cache. If ~/.aws doesn't exist
+      # on your host, run `mkdir -p ~/.aws` first or the bind mount will fail.
+      - ${HOME}/.aws:/root/.aws:ro
     restart: unless-stopped
 
   # Only needed once you graduate from the Bot Framework Emulator

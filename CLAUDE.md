@@ -46,8 +46,10 @@ A zone (`zones/<name>/`) is a system-prompt prefix (`SKILL.md`) plus an MCP serv
 
 The Claude Agent SDK has two native backends. `docker-compose.yml` passes env vars for both — set whichever you want and the SDK picks:
 
-- **Local dev (direct Anthropic API)**: set `ANTHROPIC_API_KEY` in `.env`. SDK hits `api.anthropic.com`. `ANTHROPIC_MODEL` defaults to `claude-opus-4-7` and is overridable.
-- **Production (Bedrock)**: set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_REGION`, and AWS creds (`AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY`, optionally `AWS_SESSION_TOKEN`). Set `ANTHROPIC_MODEL` to your Bedrock model ID or inference profile ARN.
+- **Bedrock (default / recommended)**: set `CLAUDE_CODE_USE_BEDROCK=1`, `AWS_PROFILE`, `AWS_REGION`, and `ANTHROPIC_MODEL` (a Bedrock model ID or inference profile ARN). The compose file **bind-mounts `~/.aws:/root/.aws:ro`**, so `aws configure sso` / `aws configure` on the host gives the container credentials automatically — no need to copy access keys into `.env` (though `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` envs are still passed through if you prefer).
+- **Direct Anthropic API**: set `ANTHROPIC_API_KEY` and leave the Bedrock vars blank. SDK calls `api.anthropic.com`. Useful when you don't have Bedrock access.
+
+There's no default for `ANTHROPIC_MODEL` — the SDK picks one if unset, but for Bedrock you almost always want to pin the model ID for your region.
 
 No proxy, no LiteLLM. If you ever need cross-provider routing or observability, add LiteLLM back and point the SDK at it via `ANTHROPIC_BASE_URL` — the SDK supports it natively.
 
