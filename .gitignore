@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Per-thread agent sandboxes — ephemeral, never commit
+workspaces/
+
+# But do commit the directory marker
+!workspaces/.gitkeep
+
+# Channel and user memory created at runtime is fine to commit;
+# do NOT commit the workspaces though.

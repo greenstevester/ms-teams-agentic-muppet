@@ -1,0 +1,26 @@
+---
+channel_id: example-channel
+zone: example-zone
+created: 2026-05-11
+schema_version: 1
+---
+
+# Channel memory
+
+Persistent context for this channel that gets loaded into every agent turn.
+The agent reads this; the agent (eventually) writes to it via the `remember`
+tool, on a branch, merged via PR.
+
+## Active work
+
+(Empty for now — populated by the agent as work progresses.)
+
+## House rules
+
+- Always reply in-thread.
+- Open PRs against `main`, never push directly.
+- Tag the originating teammate on the PR.
+
+## Recent decisions
+
+(Empty — distilled by the nightly memory job from the last 7 days of activity.)

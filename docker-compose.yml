@@ -1,0 +1,56 @@
+services:
+  hermes:
+    build: .
+    container_name: hermes
+    ports:
+      - "3978:3978"
+    environment:
+      # Claude Agent SDK → LiteLLM → OpenRouter for local dev.
+      # Switch to CLAUDE_CODE_USE_BEDROCK=1 + AWS creds for production.
+      ANTHROPIC_BASE_URL: http://litellm:4000
+      ANTHROPIC_AUTH_TOKEN: dummy
+      ANTHROPIC_MODEL: claude-opus-4
+
+      # Bot Framework — leave blank for Emulator-only local dev.
+      MS_APP_ID: ${MS_APP_ID:-}
+      MS_APP_PASSWORD: ${MS_APP_PASSWORD:-}
+      MS_APP_TYPE: ${MS_APP_TYPE:-MultiTenant}
+      MS_APP_TENANT_ID: ${MS_APP_TENANT_ID:-}
+
+      # qmd memory + zone paths inside the container
+      CONTEXT_REPO: /app/context
+      ZONES_DIR: /app/zones
+    volumes:
+      - ./context:/app/context
+      - ./zones:/app/zones
+      - workspaces:/app/workspaces
+    depends_on:
+      - litellm
+    restart: unless-stopped
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: hermes-litellm
+    environment:
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+    command: >
+      --model openrouter/anthropic/claude-opus-4
+      --port 4000
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  # Only needed once you graduate from the Bot Framework Emulator
+  # to real Teams. Comment out for Emulator-only local dev.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: hermes-tunnel
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN:-}
+    depends_on:
+      - hermes
+    restart: unless-stopped
+    profiles:
+      - tunnel
+
+volumes:
+  workspaces:

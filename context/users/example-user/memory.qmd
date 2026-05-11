@@ -1,0 +1,18 @@
+---
+user_id: example-user
+display_name: Example User
+schema_version: 1
+---
+
+# User context
+
+Per-user preferences, working style, and ongoing threads. Scoped to one
+teammate, visible across all channels they participate in.
+
+## Preferences
+
+- (Populated as the agent learns from interactions.)
+
+## Skills / focus areas
+
+- (Populated as the agent learns from interactions.)

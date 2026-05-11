@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "_comment": "Populate per-zone MCP servers here. Example shapes below; remove the underscore-prefixed entries.",
+    "_confluence": {
+      "type": "http",
+      "url": "https://your-confluence-mcp.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${CONFLUENCE_TOKEN}"
+      }
+    },
+    "_warehouse": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["warehouse-mcp-server"],
+      "env": {
+        "WAREHOUSE_URL": "${WAREHOUSE_URL}"
+      }
+    }
+  }
+}
