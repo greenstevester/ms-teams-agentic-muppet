@@ -1,5 +1,5 @@
 {
-  "name": "hermes",
+  "name": "ms-teams-agentic-muppet",
   "version": "0.1.0",
   "description": "Public-only agent for Microsoft Teams, modelled on Shopify's River",
   "private": true,

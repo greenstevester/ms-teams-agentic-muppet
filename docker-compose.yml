@@ -1,7 +1,7 @@
 services:
-  hermes:
+  ms-teams-agentic-muppet:
     build: .
-    container_name: hermes
+    container_name: ms-teams-agentic-muppet
     ports:
       - "3978:3978"
     environment:
@@ -30,7 +30,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
-    container_name: hermes-litellm
+    container_name: ms-teams-agentic-muppet-litellm
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
     command: >
@@ -44,10 +44,10 @@ services:
   # to real Teams. Comment out for Emulator-only local dev.
   tunnel:
     image: cloudflare/cloudflared:latest
-    container_name: hermes-tunnel
+    container_name: ms-teams-agentic-muppet-tunnel
     command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN:-}
     depends_on:
-      - hermes
+      - ms-teams-agentic-muppet
     restart: unless-stopped
     profiles:
       - tunnel

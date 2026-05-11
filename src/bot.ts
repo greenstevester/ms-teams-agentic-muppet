@@ -1,7 +1,7 @@
 import { ActivityHandler, TurnContext } from 'botbuilder';
 import { runAgentTurn } from './agent';
 
-export class HermesBot extends ActivityHandler {
+export class MuppetBot extends ActivityHandler {
   constructor() {
     super();
 
@@ -52,7 +52,7 @@ export class HermesBot extends ActivityHandler {
       for (const member of added) {
         if (member.id !== ctx.activity.recipient.id) continue; // skip non-bot adds
         await ctx.sendActivity(
-          "Hi — I'm Hermes. I only work in channels, never in DMs. " +
+          "Hi — I'm Muppet. I only work in channels, never in DMs. " +
             '@mention me with a task and I\'ll get started. ' +
             "Everything I do here is visible to the team — that's the point.",
         );

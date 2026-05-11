@@ -4,7 +4,7 @@ import {
   ConfigurationServiceClientCredentialFactory,
   createBotFrameworkAuthenticationFromConfiguration,
 } from 'botbuilder';
-import { HermesBot } from './bot';
+import { MuppetBot } from './bot';
 
 const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppId: process.env.MS_APP_ID,
@@ -29,7 +29,7 @@ adapter.onTurnError = async (ctx, err) => {
   }
 };
 
-const bot = new HermesBot();
+const bot = new MuppetBot();
 const app = express();
 app.use(express.json());
 
@@ -43,5 +43,5 @@ app.post('/api/messages', (req, res) => {
 
 const PORT = Number(process.env.PORT ?? 3978);
 app.listen(PORT, () => {
-  console.log(`hermes listening on :${PORT}`);
+  console.log(`ms-teams-agentic-muppet listening on :${PORT}`);
 });

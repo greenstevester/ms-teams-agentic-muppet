@@ -1,12 +1,13 @@
-# Hermes
+# ms-teams-agentic-muppet
 
-A public-only agent for Microsoft Teams, modelled on Shopify's River. Built on
-[Claude Agent SDK](https://docs.claude.com/en/api/agent-sdk), [Bot Framework](https://learn.microsoft.com/en-us/azure/bot-service/),
-and a qmd-based memory system that lives in Git.
+A public-only agent for Microsoft Teams (the bot calls itself "Muppet"), modelled
+on Shopify's River. Built on [Claude Agent SDK](https://docs.claude.com/en/api/agent-sdk),
+[Bot Framework](https://learn.microsoft.com/en-us/azure/bot-service/), and a
+qmd-based memory system that lives in Git.
 
 ## Why public-only
 
-Hermes refuses 1:1 chats and group chats. It only works in team channels, and
+Muppet refuses 1:1 chats and group chats. It only works in team channels, and
 it threads replies under the originating message. The constraint is the point:
 every conversation is searchable, every teammate can learn by watching, and the
 agent's accumulated taste lives in version-controlled markdown that the team
@@ -62,7 +63,7 @@ Then in Bot Framework Emulator:
 
 1. Register an Azure Bot resource (free `F0` tier is fine)
 2. Add Microsoft Teams as a channel
-3. Set the messaging endpoint to your Cloudflare Tunnel URL: `https://hermes-dev.yourdomain.com/api/messages`
+3. Set the messaging endpoint to your Cloudflare Tunnel URL: `https://muppet-dev.yourdomain.com/api/messages`
 4. Fill `MS_APP_ID` and `MS_APP_PASSWORD` in `.env`
 5. Set `CF_TUNNEL_TOKEN` and `docker compose up`
 6. Build the Teams app manifest via [Teams Developer Portal](https://dev.teams.microsoft.com) and sideload into a Microsoft 365 Developer Program tenant
@@ -70,9 +71,9 @@ Then in Bot Framework Emulator:
 ## Project layout
 
 ```
-hermes/
-├── docker-compose.yml      # hermes + litellm + cloudflared
-├── Dockerfile              # hermes service
+ms-teams-agentic-muppet/
+├── docker-compose.yml      # ms-teams-agentic-muppet + litellm + cloudflared
+├── Dockerfile              # ms-teams-agentic-muppet service
 ├── package.json
 ├── tsconfig.json
 ├── src/
@@ -94,7 +95,7 @@ hermes/
 ## Roadmap
 
 - [ ] `remember` tool: agent writes to qmd memory via PR, never directly to main
-- [ ] Zone selection command (`@hermes use zone <name>`)
+- [ ] Zone selection command (`@Muppet use zone <name>`)
 - [ ] Streamed responses (batched `sendActivity` every ~1.5s to stay under Teams rate limits)
 - [ ] Per-zone MCP server loading from `zones/<name>/mcp.json`
 - [ ] Per-zone secret injection (AWS creds, `gh` token, warehouse credentials)
